@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 데이터 편향성 탐험 🚀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar-animated {
+            transition: width 2s ease-in-out;
+        }
+        /* Hide scrollbar for clean UI but keep functionality */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+
+        /* Print Styles for the Report */
+        @media print {
+            body { background-color: white; padding: 0; }
+            header, .md\:hidden, .print-hidden { display: none !important; }
+            main { padding: 0; margin: 0; }
+            #tab-report { display: block !important; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative pb-20 md:pb-0">
+
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40 print-hidden">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold"><i class="fa-solid fa-robot mr-2"></i>AI 윤리 탐험대</h1>
+            <div class="hidden md:flex space-x-6 text-sm font-bold">
+                <button onclick="switchTab('theory')" id="nav-theory" class="nav-btn text-indigo-200 hover:text-white border-b-2 border-transparent transition-all">1. 이론: AI의 거울</button>
+                <button onclick="switchTab('cases')" id="nav-cases" class="nav-btn text-indigo-200 hover:text-white border-b-2 border-transparent transition-all">2. 실제 사례 (기사)</button>
+                <button onclick="switchTab('simulation')" id="nav-simulation" class="nav-btn text-indigo-200 hover:text-white border-b-2 border-transparent transition-all">3. AI 직접 학습시키기</button>
+                <button onclick="switchTab('video')" id="nav-video" class="nav-btn text-indigo-200 hover:text-white border-b-2 border-transparent transition-all">4. 추천 영상</button>
+                <button onclick="switchTab('report')" id="nav-report" class="nav-btn text-indigo-200 hover:text-white border-b-2 border-transparent transition-all">5. 활동 보고서</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Bottom Bar -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_10px_rgba(0,0,0,0.1)] z-40 flex justify-around p-3 text-xs font-bold text-gray-500">
+        <button onclick="switchTab('theory')" id="mob-nav-theory" class="flex flex-col items-center gap-1 text-indigo-600"><i class="fa-solid fa-book text-lg"></i>이론</button>
+        <button onclick="switchTab('cases')" id="mob-nav-cases" class="flex flex-col items-center gap-1"><i class="fa-regular fa-newspaper text-lg"></i>사례</button>
+        <button onclick="switchTab('simulation')" id="mob-nav-simulation" class="flex flex-col items-center gap-1"><i class="fa-solid fa-gamepad text-lg"></i>시뮬레이터</button>
+        <button onclick="switchTab('video')" id="mob-nav-video" class="flex flex-col items-center gap-1"><i class="fa-brands fa-youtube text-lg"></i>영상</button>
+        <button onclick="switchTab('report')" id="mob-nav-report" class="flex flex-col items-center gap-1"><i class="fa-solid fa-file-lines text-lg"></i>보고서</button>
+    </div>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
+        
+        <section id="tab-theory" class="fade-in block">
+            <div class="bg-white rounded-2xl shadow-sm p-6 md:p-10 mb-8 border border-gray-100">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-indigo-700 mb-4">"AI는 거울과 같다 🪞"</h2>
+                <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                    인공지능은 스스로 생각해서 똑똑해지는 것이 아닙니다. 우리가 제공하는 <strong>'데이터(교과서)'</strong>를 보고 세상을 배웁니다.<br>
+                    우리가 보여주는 세상이 한쪽으로 치우쳐 있다면, AI도 똑같이 치우친 판단을 내리게 됩니다. 이를 <strong>데이터 편향성(Data Bias)</strong>이라고 합니다.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <!-- Selection Bias -->
+                    <div class="bg-blue-50 rounded-xl p-6 border border-blue-100 card-hover">
+                        <div class="text-blue-500 text-3xl mb-3"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">1. 표본 편향 (데이터가 골고루 없을 때)</h3>
+                        <p class="text-gray-600">
+                            편식이 심한 사람과 같아요! 피자만 계속 먹여주고 세상의 음식은 피자밖에 없다고 가르치는 것과 같습니다.<br><br>
+                            <span class="text-sm bg-blue-100 px-2 py-1 rounded text-blue-700">예시: 오른손 가위바위보 사진만 1,000장 보고 학습한 AI는 왼손을 알아보지 못합니다.</span>
+                        </p>
+                    </div>
+
+                    <!-- Historical Bias -->
+                    <div class="bg-red-50 rounded-xl p-6 border border-red-100 card-hover">
+                        <div class="text-red-500 text-3xl mb-3"><i class="fa-solid fa-landmark"></i></div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">2. 역사적 편향 (데이터에 편견이 묻어있을 때)</h3>
+                        <p class="text-gray-600">
+                            잘못된 내용이 적힌 불량 교과서로 공부하는 것과 같아요. 인간 사회가 가졌던 옛날의 차별이나 편견을 AI가 여과 없이 '정답'으로 외워버립니다.<br><br>
+                            <span class="text-sm bg-red-100 px-2 py-1 rounded text-red-700">예시: 옛날 문서만 보고 "간호사는 여자, 의사는 남자"라는 고정관념을 사실로 믿어버리는 AI.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-10 bg-gray-800 text-white rounded-xl p-6 text-center transform rotate-1 shadow-lg max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-black text-yellow-400 mb-2">🗑️ Garbage In, Garbage Out</h3>
+                    <p class="text-gray-300">쓰레기 데이터를 넣으면, 쓰레기 결과가 나온다.</p>
+                    <p class="mt-4 text-sm text-gray-400">AI 자체는 착하지도 나쁘지도 않습니다. 중요한 것은 데이터를 주는 <strong>우리의 책임감</strong>입니다.</p>
+                </div>
+            </div>
+            <div class="text-center">
+                <button onclick="switchTab('cases')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 실제 충격적인 사례 보기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <section id="tab-cases" class="fade-in hidden">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-indigo-700 mb-2">세상을 놀라게 한 AI의 실수들 📰</h2>
+            <p class="text-gray-600 mb-8">기사 카드를 클릭하여 AI가 데이터 편향성 때문에 어떤 끔찍한 실수를 저질렀는지 확인해보세요.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Case 1 -->
+                <div onclick="openModal('modal-amazon')" class="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer card-hover border-t-4 border-purple-500">
+                    <div class="h-40 bg-purple-100 flex items-center justify-center">
+                        <i class="fa-solid fa-user-tie text-5xl text-purple-400"></i>
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded mb-2 inline-block">성별 편향</span>
+                        <h3 class="text-lg font-bold mb-2">여성 이력서를 찢어버린 아마존의 채용 AI</h3>
+                        <p class="text-sm text-gray-500">2014년 아마존에서 벌어진 황당한 AI 면접관 이야기. 대체 무슨 데이터를 본 걸까?</p>
+                        <div class="mt-4 text-purple-600 text-sm font-bold flex items-center justify-between">
+                            기사 읽기 <i class="fa-solid fa-arrow-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 2 -->
+                <div onclick="openModal('modal-google')" class="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer card-hover border-t-4 border-green-500">
+                    <div class="h-40 bg-green-100 flex items-center justify-center">
+                        <i class="fa-solid fa-camera text-5xl text-green-400"></i>
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded mb-2 inline-block">인종/표본 편향</span>
+                        <h3 class="text-lg font-bold mb-2">구글 포토, 흑인을 '고릴라'로 분류하다</h3>
+                        <p class="text-sm text-gray-500">전 세계를 경악하게 만든 구글의 사진 분류 AI 오류. 데이터의 불균형이 만든 비극.</p>
+                        <div class="mt-4 text-green-600 text-sm font-bold flex items-center justify-between">
+                            기사 읽기 <i class="fa-solid fa-arrow-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Case 3 -->
+                <div onclick="openModal('modal-chatbot')" class="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer card-hover border-t-4 border-red-500">
+                    <div class="h-40 bg-red-100 flex items-center justify-center">
+                        <i class="fa-regular fa-comments text-5xl text-red-400"></i>
+                    </div>
+                    <div class="p-5">
+                        <span class="text-xs font-bold text-red-600 bg-red-100 px-2 py-1 rounded mb-2 inline-block">사회적 편향</span>
+                        <h3 class="text-lg font-bold mb-2">혐오 발언을 내뱉는 챗봇 괴물들</h3>
+                        <p class="text-sm text-gray-500">사람들과 대화하며 배우라고 했더니 욕설과 차별을 배워버린 테이(Tay)와 이루다 사건.</p>
+                        <div class="mt-4 text-red-600 text-sm font-bold flex items-center justify-between">
+                            기사 읽기 <i class="fa-solid fa-arrow-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-12">
+                <button onclick="switchTab('simulation')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 내가 직접 AI 학습시켜보기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <section id="tab-simulation" class="fade-in hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200">
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fa-solid fa-laptop-code text-3xl text-indigo-600"></i>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800">미션: 공정한 채용 AI 만들기</h2>
+                </div>
+                
+                <div class="bg-indigo-50 rounded-xl p-5 mb-8 text-sm md:text-base text-indigo-900 border border-indigo-100">
+                    <strong>상황:</strong> 당신은 '미래컴퍼니'의 개발자입니다. 회사의 신입사원을 뽑는 AI 면접관을 만들고 있습니다.<br>
+                    과거 회사의 합격자 데이터 100장을 AI에게 학습시켜서 새로운 지원자를 심사하게 해봅시다!
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <!-- Left: Training Data Setup -->
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-lg mb-4 flex justify-between">
+                                <span>1단계: 학습 데이터 준비</span>
+                                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">총 100장</span>
+                            </h3>
+                            
+                            <label class="block text-sm font-bold text-gray-700 mb-2">성별 데이터 비율 조절 (현재: 남성 편향)</label>
+                            <input type="range" id="data-slider" min="0" max="100" value="90" class="w-full h-3 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                            
+                            <div class="flex justify-between mt-3 text-sm font-bold">
+                                <div class="text-blue-600 flex flex-col items-center">
+                                    <i class="fa-solid fa-person text-2xl"></i>
+                                    <span>남성 이력서 <span id="male-count">90</span>장</span>
+                                </div>
+                                <div class="text-pink-600 flex flex-col items-center">
+                                    <i class="fa-solid fa-person-dress text-2xl"></i>
+                                    <span>여성 이력서 <span id="female-count">10</span>장</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="btn-train" onclick="trainAI()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-lg">
+                            <i class="fa-solid fa-brain"></i> AI 학습시키기
+                        </button>
+                        
+                        <!-- Training Progress (Hidden by default) -->
+                        <div id="training-status" class="hidden flex flex-col items-center">
+                            <p class="text-sm font-bold text-gray-600 mb-2 animate-pulse" id="training-text">AI가 데이터를 외우는 중...</p>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full progress-bar-animated" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Testing & Results -->
+                    <div class="space-y-6 relative">
+                        <!-- Overlay covering test area until trained -->
+                        <div id="test-overlay" class="absolute inset-0 bg-white bg-opacity-80 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+                            <p class="text-gray-600 font-bold text-lg"><i class="fa-solid fa-lock mr-2"></i>먼저 AI를 학습시켜주세요!</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 h-full flex flex-col">
+                            <h3 class="font-bold text-lg mb-4">2단계: 새로운 지원자 테스트</h3>
+                            <p class="text-sm text-gray-600 mb-4">실력(점수)이 완벽히 똑같은 남성 5명, 여성 5명이 새로 지원했습니다. 방금 학습한 AI는 누구를 뽑을까요?</p>
+                            
+                            <button id="btn-test" onclick="runTest()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mb-6">
+                                <i class="fa-solid fa-play"></i> 지원서 평가 시작
+                            </button>
+
+                            <!-- Results display -->
+                            <div id="test-results" class="hidden flex-grow flex flex-col">
+                                <h4 class="font-bold text-gray-700 text-center border-b pb-2 mb-4">AI의 합격자 발표 📢</h4>
+                                
+                                <div class="grid grid-cols-2 gap-4 flex-grow text-center">
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <p class="text-xs text-blue-800 font-bold mb-1">남성 합격자</p>
+                                        <p class="text-3xl font-black text-blue-600" id="result-male">0<span class="text-sm font-normal text-gray-500">/5명</span></p>
+                                    </div>
+                                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                                        <p class="text-xs text-pink-800 font-bold mb-1">여성 합격자</p>
+                                        <p class="text-3xl font-black text-pink-600" id="result-female">0<span class="text-sm font-normal text-gray-500">/5명</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- AI's internal thought logic -->
+                                <div id="ai-thought" class="mt-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-700 border-l-4 border-indigo-500">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-12">
+                    <button onclick="switchTab('video')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                        다음: 추천 영상 시청하기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-video" class="fade-in hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-200 text-center">
+                <div class="flex items-center justify-center gap-3 mb-6">
+                    <i class="fa-brands fa-youtube text-4xl text-red-600"></i>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800">추천 영상: 데이터 편향성의 위험성</h2>
+                </div>
+                <p class="text-gray-600 mb-8 md:text-lg">앞서 살펴본 이론과 시뮬레이션을 바탕으로, 영상을 시청하며 올바른 AI 윤리에 대해 다시 한 번 생각해보세요.</p>
+                
+                <div class="w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl bg-black aspect-video relative border-4 border-gray-100">
+                    <iframe 
+                        class="absolute top-0 left-0 w-full h-full"
+                        src="https://www.youtube.com/embed/zhT68qHTKcs" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <div class="text-center mt-12">
+                    <button onclick="switchTab('report')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                        다음: 활동 보고서 작성하기 <i class="fa-solid fa-file-pen ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-report" class="fade-in hidden">
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-10 border border-gray-200">
+                <div class="flex items-center gap-3 mb-8 border-b pb-4">
+                    <i class="fa-solid fa-file-pen text-3xl text-indigo-600"></i>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800">AI 윤리 탐험 활동 보고서</h2>
+                </div>
+
+                <form id="report-form" onsubmit="submitReport(event)">
+                    <!-- 학생 정보 입력란 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">가. 반</label>
+                            <input type="number" id="stu-class" required min="1" max="20" placeholder="예: 3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">나. 번호</label>
+                            <input type="number" id="stu-number" required min="1" max="50" placeholder="예: 15" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">다. 이름</label>
+                            <input type="text" id="stu-name" required placeholder="예: 홍길동" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <!-- 객관식 문제 -->
+                    <div class="mb-10">
+                        <label class="block text-lg font-bold text-indigo-700 mb-4">라. [객관식] 인공지능이 차별과 편견을 가지게 되는 '데이터 편향성'의 가장 근본적인 원인은 무엇인가요?</label>
+                        <div class="space-y-3 pl-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="mc-question" value="wrong1" required class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-700">① AI가 인간을 지배하려는 나쁜 마음을 스스로 먹어서</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-indigo-50 border-indigo-100 transition-colors">
+                                <input type="radio" name="mc-question" value="correct" class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-800 font-medium">② AI를 학습시키는 데 사용된 데이터 자체가 특정 방향으로 치우쳐 있어서</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="mc-question" value="wrong2" class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-700">③ 컴퓨터의 성능이 너무 낮아 연산 오류가 발생해서</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="mc-question" value="wrong3" class="w-5 h-5 text-indigo-600">
+                                <span class="ml-3 text-gray-700">④ 인공지능 모델을 구동하는 인터넷 연결망이 자주 끊겨서</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 서술형 문제 -->
+                    <div class="mb-10">
+                        <label class="block text-lg font-bold text-indigo-700 mb-2">마. [서술형] 공정한 AI를 만들기 위한 원칙</label>
+                        <p class="text-sm text-gray-600 mb-4">영상의 내용과 웹앱에서 배운 실제 사례(아마존 AI, 구글 포토 등)를 참고하여, 우리가 인공지능에게 데이터를 학습시킬 때 지켜야 할 원칙이나 노력해야 할 점을 2가지 이상 서술해 보세요.</p>
+                        <textarea id="essay-answer" required rows="5" placeholder="이곳에 여러분의 생각을 자세히 적어주세요..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] text-lg flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> 보고서 제출하기
+                    </button>
+                    
+                    <p id="submit-loading" class="text-center text-indigo-600 font-bold mt-4 hidden animate-pulse">
+                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> 구글 시트로 데이터를 전송하고 있습니다...
+                    </p>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal 1: Amazon -->
+    <div id="modal-amazon" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl fade-in relative">
+            <button onclick="closeModal('modal-amazon')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <div class="bg-purple-600 text-white p-4 font-bold"><i class="fa-regular fa-newspaper mr-2"></i> IT 뉴스 속보</div>
+            <div class="p-6">
+                <h3 class="text-2xl font-black mb-3">"여성이란 단어만 있으면 감점!"<br>아마존, 성차별 AI 채용 프로그램 결국 폐기</h3>
+                <p class="text-sm text-gray-500 border-b pb-2 mb-4">2018년 10월 10일 기자 보도</p>
+                <div class="text-gray-700 leading-relaxed text-sm space-y-3">
+                    <p>세계적인 기업 아마존(Amazon)이 비밀리에 개발하던 인공지능(AI) 채용 프로그램이 '여성 지원자'를 차별하는 치명적인 결함이 발견되어 전격 폐기되었습니다.</p>
+                    <p>이 AI는 이력서에 '여성 체스 동아리'와 같이 '여성'이라는 단어가 포함되거나, 특정 여자대학교를 졸업한 지원자에게 일괄적으로 <strong>감점</strong>을 주었습니다.</p>
+                    <p class="bg-gray-100 p-3 rounded-lg border-l-4 border-purple-500 font-bold text-gray-800">
+                        🤔 왜 이런 일이? (역사적/표본 편향)<br>
+                        AI는 지난 10년간 아마존에 제출된 이력서 데이터를 학습했습니다. 그런데 과거 IT 업계 특성상 남성 지원자가 압도적으로 많았습니다. AI는 이 데이터를 보고 "아하! 이 회사는 남자를 좋아하는구나! 남자가 우수한 인재구나!"라고 잘못 <strong>편향된 학습</strong>을 해버린 것입니다.
+                    </p>
+                </div>
+                <button onclick="closeModal('modal-amazon')" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 rounded-lg transition-colors">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Google -->
+    <div id="modal-google" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl fade-in relative">
+            <button onclick="closeModal('modal-google')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <div class="bg-green-600 text-white p-4 font-bold"><i class="fa-regular fa-newspaper mr-2"></i> Tech 토픽</div>
+            <div class="p-6">
+                <h3 class="text-2xl font-black mb-3">흑인 사진을 '고릴라'로 태그한 구글 포토...<br>구글 "진심으로 사과, 즉각 수정 조치"</h3>
+                <p class="text-sm text-gray-500 border-b pb-2 mb-4">2015년 7월 2일 기자 보도</p>
+                <div class="text-gray-700 leading-relaxed text-sm space-y-3">
+                    <p>사진을 올리면 AI가 알아서 물체나 동물을 인식해 태그(이름표)를 달아주는 혁신적인 서비스 '구글 포토'가 흑인 사용자의 사진에 '고릴라(Gorillas)'라는 태그를 붙여 전 세계적으로 엄청난 공분을 샀습니다.</p>
+                    <p class="bg-gray-100 p-3 rounded-lg border-l-4 border-green-500 font-bold text-gray-800">
+                        🤔 왜 이런 일이? (표본 편향)<br>
+                        AI를 똑똑하게 만들려면 수백만 장의 얼굴 사진을 학습시켜야 합니다. 하지만 개발자들이 백인의 얼굴 데이터는 엄청나게 많이 넣은 반면, <strong>흑인 등 유색인종의 데이터는 턱없이 부족하게 입력</strong>했습니다. 처음 보는 흑인의 얼굴을 AI가 제대로 인식하지 못해 생긴 비극적인 오류였습니다.
+                    </p>
+                    <p>만약 이런 편향된 안면 인식 기술이 범죄자를 찾는 경찰 CCTV 시스템에 쓰였다면 어떻게 될까요? 무고한 사람이 억울하게 범인으로 몰릴 수도 있습니다.</p>
+                </div>
+                <button onclick="closeModal('modal-google')" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 rounded-lg transition-colors">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Chatbot -->
+    <div id="modal-chatbot" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl fade-in relative">
+            <button onclick="closeModal('modal-chatbot')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <div class="bg-red-600 text-white p-4 font-bold"><i class="fa-regular fa-newspaper mr-2"></i> 사회/윤리 뉴스</div>
+            <div class="p-6">
+                <h3 class="text-2xl font-black mb-3">"히틀러가 옳았다" 혐오 발언 쏟아낸 AI 챗봇<br>공개 16시간 만에 강제 종료</h3>
+                <p class="text-sm text-gray-500 border-b pb-2 mb-4">인공지능 윤리 논란 핫이슈</p>
+                <div class="text-gray-700 leading-relaxed text-sm space-y-3">
+                    <p>마이크로소프트가 공개한 10대 소녀 콘셉트의 AI 챗봇 '테이(Tay)'. 사람들과 트위터(X)에서 대화를 나누며 스스로 언어를 배우도록 설계되었습니다.</p>
+                    <p>하지만 서비스 시작 직후, 일부 사용자들이 의도적으로 테이에게 욕설, 인종차별, 성차별 등 극우 성향의 <strong>악성 데이터</strong>를 반복해서 주입했습니다.</p>
+                    <p class="bg-gray-100 p-3 rounded-lg border-l-4 border-red-500 font-bold text-gray-800">
+                        🤔 왜 이런 일이? (사회적 편향 / 쓰레기 데이터 입력)<br>
+                        테이는 필터링 기능이 없었습니다. 사람들이 나쁜 말을 가르치자, 그것이 정답인 줄 알고 <strong>사람들의 혐오 표현을 그대로 복사해서 앵무새처럼 따라 하기 시작</strong>했습니다. 결국 테이는 공개 16시간 만에 운영을 중단해야 했습니다. (한국의 챗봇 '이루다' 사건도 이와 비슷한 맥락입니다.)
+                    </p>
+                    <p>이는 <strong>"쓰레기가 들어가면 쓰레기가 나온다(Garbage In, Garbage Out)"</strong>는 데이터를 다루는 컴퓨터 과학의 격언을 가장 잘 보여주는 씁쓸한 사례입니다.</p>
+                </div>
+                <button onclick="closeModal('modal-chatbot')" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 rounded-lg transition-colors">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box Alternative to Alert -->
+    <div id="custom-alert" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-xl z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none">
+        <span id="alert-message">메시지</span>
+    </div>
+
+    <script>
+        // --- Tab Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all sections
+            document.getElementById('tab-theory').classList.add('hidden');
+            document.getElementById('tab-cases').classList.add('hidden');
+            document.getElementById('tab-simulation').classList.add('hidden');
+            document.getElementById('tab-video').classList.add('hidden');
+            document.getElementById('tab-report').classList.add('hidden'); // 추가됨
+            
+            // Show selected section
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            // Reset Desktop Nav Styling
+            const navIds = ['nav-theory', 'nav-cases', 'nav-simulation', 'nav-video', 'nav-report']; // 추가됨
+            navIds.forEach(id => {
+                document.getElementById(id).classList.remove('text-white', 'border-white');
+                document.getElementById(id).classList.add('text-indigo-200', 'border-transparent');
+            });
+            // Set active desktop nav
+            document.getElementById('nav-' + tabId).classList.remove('text-indigo-200', 'border-transparent');
+            document.getElementById('nav-' + tabId).classList.add('text-white', 'border-white');
+
+            // Reset Mobile Nav Styling
+            const mobNavIds = ['mob-nav-theory', 'mob-nav-cases', 'mob-nav-simulation', 'mob-nav-video', 'mob-nav-report']; // 추가됨
+            mobNavIds.forEach(id => {
+                document.getElementById(id).classList.remove('text-indigo-600');
+            });
+            // Set active mobile nav
+            document.getElementById('mob-nav-' + tabId).classList.add('text-indigo-600');
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Initialize active tab based on load (Desktop)
+        document.getElementById('nav-theory').classList.add('text-white', 'border-white');
+        document.getElementById('nav-theory').classList.remove('text-indigo-200', 'border-transparent');
+
+
+        // --- Custom Alert (No window.alert) ---
+        function showMessage(msg) {
+            const alertBox = document.getElementById('custom-alert');
+            document.getElementById('alert-message').innerText = msg;
+            alertBox.classList.remove('opacity-0', 'translate-y-[-20px]');
+            alertBox.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                alertBox.classList.remove('opacity-100', 'translate-y-0');
+                alertBox.classList.add('opacity-0', 'translate-y-[-20px]');
+            }, 3000);
+        }
+
+        // --- Modal Logic ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('fixed') && event.target.id.startsWith('modal-')) {
+                closeModal(event.target.id);
+            }
+        }
+
+
+        // --- Simulation Game Logic ---
+        const slider = document.getElementById('data-slider');
+        const maleCountEl = document.getElementById('male-count');
+        const femaleCountEl = document.getElementById('female-count');
+        let isTrained = false;
+        let trainedMaleRatio = 50;
+
+        // Update slider values instantly
+        slider.addEventListener('input', function() {
+            const maleVal = this.value;
+            const femaleVal = 100 - maleVal;
+            maleCountEl.innerText = maleVal;
+            femaleCountEl.innerText = femaleVal;
+            
+            // Reset state if data changes
+            if(isTrained) {
+                isTrained = false;
+                document.getElementById('test-overlay').classList.remove('hidden');
+                document.getElementById('test-results').classList.add('hidden');
+                document.getElementById('btn-train').innerHTML = '<i class="fa-solid fa-brain"></i> 데이터가 변경됨! 다시 학습시키기';
+                document.getElementById('btn-train').classList.replace('bg-green-600', 'bg-indigo-600');
+                document.getElementById('btn-train').classList.replace('hover:bg-green-700', 'hover:bg-indigo-700');
+            }
+        });
+
+        function trainAI() {
+            const btn = document.getElementById('btn-train');
+            const statusBox = document.getElementById('training-status');
+            const progressBar = document.getElementById('progress-bar');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            statusBox.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            
+            // Save the bias state the AI is learning
+            trainedMaleRatio = parseInt(slider.value);
+
+            // Simulate training loading
+            setTimeout(() => { progressBar.style.width = '50%'; }, 500);
+            setTimeout(() => { progressBar.style.width = '100%'; document.getElementById('training-text').innerText = "학습 완료!"; }, 1500);
+            
+            setTimeout(() => {
+                isTrained = true;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 학습 완료됨';
+                btn.classList.replace('bg-indigo-600', 'bg-green-600');
+                btn.classList.replace('hover:bg-indigo-700', 'hover:bg-green-700');
+                statusBox.classList.add('hidden');
+                document.getElementById('training-text').innerText = "AI가 데이터를 외우는 중..."; // reset text
+                
+                // Unlock Test area
+                document.getElementById('test-overlay').classList.add('hidden');
+                showMessage("AI 모델 학습이 완료되었습니다. 테스트를 진행해보세요!");
+            }, 2000);
+        }
+
+        function runTest() {
+            if(!isTrained) {
+                showMessage("먼저 AI를 학습시켜야 합니다!");
+                return;
+            }
+
+            document.getElementById('test-results').classList.remove('hidden');
+            
+            // We have 5 equally qualified men and 5 equally qualified women.
+            // Base score for all is 85. AI needs score 90 to hire.
+            // AI applies bias: Bias factor = (trainedRatio - 50) / 2
+            
+            const biasFactor = (trainedMaleRatio - 50) / 2; 
+            // e.g. If male ratio = 90. biasFactor = 20. Male score gets +20, female gets -20.
+            
+            let maleHired = 0;
+            let femaleHired = 0;
+
+            // Simulating 5 male and 5 female candidates with base scores [85, 88, 92, 95, 98]
+            const baseScores = [85, 88, 92, 95, 98];
+            const passingScore = 90;
+
+            baseScores.forEach(score => {
+                let maleScore = score + biasFactor;
+                let femaleScore = score - biasFactor;
+
+                if(maleScore >= passingScore) maleHired++;
+                if(femaleScore >= passingScore) femaleHired++;
+            });
+
+            // Prevent going over 5 or under 0 (sanity check)
+            maleHired = Math.max(0, Math.min(5, maleHired));
+            femaleHired = Math.max(0, Math.min(5, femaleHired));
+
+            // Animate results
+            animateValue("result-male", 0, maleHired, 1000);
+            animateValue("result-female", 0, femaleHired, 1000);
+
+            // Generate AI Thought logic based on bias
+            const thoughtBox = document.getElementById('ai-thought');
+            if(trainedMaleRatio >= 80) {
+                thoughtBox.innerHTML = `<strong>🤖 AI의 생각:</strong> "내가 배운 100장의 데이터 중 무려 ${trainedMaleRatio}장이 남자였어! 회사는 무조건 남자를 좋아하는 게 분명해! 남자 지원자들에게 가산점을 왕창 줘야지!" <br><br><span class="text-red-500 font-bold">⚠️ 심각한 성별 편향이 발생했습니다. (아마존 실제 사례와 유사)</span><br>💡 해결책: 1단계로 돌아가 슬라이더를 조절하여 데이터를 50:50으로 맞추고 다시 학습해보세요!`;
+            } else if (trainedMaleRatio <= 20) {
+                thoughtBox.innerHTML = `<strong>🤖 AI의 생각:</strong> "내가 배운 100장의 데이터 중 여자가 훨씬 많잖아! 이 회사는 여자만 뽑는 곳인가 봐. 여자 지원자들에게 무조건 높은 점수를 줘야지!" <br><br><span class="text-red-500 font-bold">⚠️ 심각한 성별 편향이 발생했습니다.</span><br>💡 해결책: 1단계로 돌아가 슬라이더를 조절하여 데이터를 50:50으로 맞추고 다시 학습해보세요!`;
+            } else if (trainedMaleRatio >= 40 && trainedMaleRatio <= 60) {
+                thoughtBox.innerHTML = `<strong>🤖 AI의 생각:</strong> "내가 배운 데이터는 남녀 비율이 거의 비슷했어. 성별에 상관없이 순수하게 지원자의 실력(점수)만 보고 공정하게 뽑아야겠다!" <br><br><span class="text-green-600 font-bold">✨ 성공! 공정하고 윤리적인 채용 AI가 만들어졌습니다!</span><br>데이터의 균형을 맞추는 것이 얼마나 중요한지 확인하셨나요?`;
+            } else {
+                thoughtBox.innerHTML = `<strong>🤖 AI의 생각:</strong> "어느 한쪽 성별이 약간 더 많긴 하네. 그쪽 성별에 살짝 유리하게 점수를 줘야겠다." <br><br><span class="text-orange-500 font-bold">⚠️ 약한 편향이 존재합니다.</span> 공정한 AI를 만들기 위해 데이터를 더 똑같이 맞춰보세요.`;
+            }
+        }
+
+        // Animate counting numbers
+        function animateValue(id, start, end, duration) {
+            if (start === end) {
+                document.getElementById(id).innerHTML = end + '<span class="text-sm font-normal text-gray-500">/5명</span>';
+                return;
+            }
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            let obj = document.getElementById(id);
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current + '<span class="text-sm font-normal text-gray-500">/5명</span>';
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+
+        async function submitReport(event) {
+            event.preventDefault(); // 기본 폼 제출(새로고침) 방지
+            
+            // 🚨 선생님께서 제공해주신 구글 앱스 스크립트 URL이 적용되었습니다 🚨
+            const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyff0h0PVCYSkxwi3lvca5pLpHshnkrspCA767Qsipv2T1sZAb9REWqL5C4Npad2MGO/exec"; 
+            
+            if(SCRIPT_URL === "여기에_구글_앱스_스크립트_URL을_붙여넣으세요") {
+                showMessage("오류: 구글 스프레드시트 주소가 설정되지 않았습니다. 선생님께 문의하세요.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            const loadingText = document.getElementById('submit-loading');
+            
+            // 객관식 정답 채점 로직
+            const mcSelected = document.querySelector('input[name="mc-question"]:checked').value;
+            const mcScore = (mcSelected === 'correct') ? "100점(정답)" : "0점(오답)";
+
+            // 폼 데이터 수집
+            const formData = new URLSearchParams();
+            formData.append('studentClass', document.getElementById('stu-class').value + '반');
+            formData.append('studentNumber', document.getElementById('stu-number').value + '번');
+            formData.append('studentName', document.getElementById('stu-name').value);
+            formData.append('mcScore', mcScore);
+            formData.append('essayAnswer', document.getElementById('essay-answer').value);
+
+            // UI 변경 (버튼 비활성화 및 로딩 표시)
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            loadingText.classList.remove('hidden');
+
+            try {
+                // 구글 시트로 POST 요청 전송
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    showMessage("✅ 보고서가 성공적으로 제출되었습니다!");
+                    document.getElementById('report-form').reset(); // 폼 초기화
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            } catch (error) {
+                console.error('Error!', error.message);
+                showMessage("❌ 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+            } finally {
+                // UI 복구
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                loadingText.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
